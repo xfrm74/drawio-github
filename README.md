@@ -1,6 +1,10 @@
 # Draw.io GitHub Integration
 
-GitHub support is now available https://www.draw.io/?mode=github An example for integration into GitHub wikis is available here: https://github.com/jgraph/draw.io/wiki/Embed-Diagrams!
+Please read <a href="http://jgraph.github.io/drawio-html5" target="_blank">this</a> for a high-level introduction.
+
+GitHub support is now available https://www.draw.io/?mode=github
+
+An example for integration into GitHub wikis is available here: https://github.com/jgraph/draw.io/wiki/Embed-Diagrams!
 
 --
 
