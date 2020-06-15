@@ -4,50 +4,50 @@ var nanocms = function(elt)
 	{
 		var result = new Object();
 		var params = window.location.search.slice(1).split('&');
-	
+
 		for (var i = 0; i < params.length; i++)
 		{
 			idx = params[i].indexOf('=');
-		
+
 			if (idx > 0)
 			{
 				result[params[i].substring(0, idx)] = params[i].substring(idx + 1);
 			}
 		}
-	
+
 		return result;
 	})();
 
 	// Uses first part of path as repo name.
 	// Change this according to your setup.
 	var tokens = window.location.pathname.split('/');
-	
+
 	var getEventSourceDiagram = function(evt)
 	{
 		var source = evt.srcElement || evt.target;
-	
+
 		// Redirects to foreignObject
 		if (source.ownerSVGElement == null)
 		{
 			var fo = source.parentNode;
-	
+
 			while (fo != null && fo.nodeName != 'foreignObject')
 			{
 				fo = fo.parentNode;
 			}
-		
+
 			if (fo != null)
 			{
 				source = fo;
 			}
 		}
-	
+
 		// Redirects to SVG element
 		if (source.ownerSVGElement != null)
 		{
 			source = source.ownerSVGElement;
 		}
-	
+
 		return source;
 	};
 
@@ -56,7 +56,7 @@ var nanocms = function(elt)
 		// Edits an image with drawio class on double click
 		document.addEventListener('dblclick', function(evt)
 		{
-			var url = 'https://www.draw.io/?embed=1&ui=atlas&spin=1&modified=unsavedChanges&proto=json';
+			var url = 'https://embed.diagrams.net/?embed=1&ui=atlas&spin=1&modified=unsavedChanges&proto=json';
 			var source = getEventSourceDiagram(evt);
 
 			if ((source.nodeName == 'IMG' && source.className == 'nanocms-diagram') ||
@@ -64,19 +64,19 @@ var nanocms = function(elt)
 			{
 				// Checks if the elt is inside a content editable element
 				var parent = source;
-		
+
 				while (parent != null && parent.nodeType == 1 &&
 					parent.getAttribute('contentEditable') != 'true')
 				{
 					parent = parent.parentNode;
 				}
-	
+
 				if (parent != null && parent.nodeType == 1 && parent.getAttribute('contentEditable') == 'true')
 				{
 					if (source.drawIoWindow == null || source.drawIoWindow.closed)
 					{
 						var isPng = false;
-					
+
 						// Implements protocol for loading and exporting with embedded XML
 						var receive = function(evt)
 						{
@@ -88,14 +88,14 @@ var nanocms = function(elt)
 								if (msg.event == 'init')
 								{
 									var data = source.getAttribute('src');
-									
+
 									if (source.nodeName == 'svg')
 									{
 										data = decodeURIComponent(source.getAttribute('content'));
 									}
-									
+
 									isPng = data.substring(0, 15) == 'data:image/png;';
-								
+
 									// Sends the data URI with embedded XML to editor
 									if (isPng)
 									{
@@ -124,15 +124,15 @@ var nanocms = function(elt)
 										wrapper.appendChild(svg);
 										svg.outerHTML = decodeURIComponent(escape(atob(msg.data.substring(msg.data.indexOf(',') + 1))));
 										wrapper.firstChild.setAttribute('class', 'nanocms-diagram');
-										
+
 										// Responsive size
 										var w = parseInt(wrapper.firstChild.getAttribute('width'));
 										var h = parseInt(wrapper.firstChild.getAttribute('height'));
-										
+
 										wrapper.firstChild.setAttribute('viewBox', '0 0 ' + w + ' ' + h);
 										wrapper.firstChild.setAttribute('style', 'max-height:' + h + 'px;');
 										wrapper.firstChild.removeAttribute('height');
-									
+
 										// Updates the inline SVG
 										source.outerHTML = wrapper.innerHTML;
 									}
@@ -142,7 +142,7 @@ var nanocms = function(elt)
 										source.setAttribute('src', msg.data);
 									}
 								}
-		
+
 								// Received if the user clicks exit or after export
 								if (msg.event == 'exit' || msg.event == 'export')
 								{
@@ -175,29 +175,29 @@ var nanocms = function(elt)
 		var save = function(callback)
 		{
 			var username = urlParams['username'] || prompt('Username');
-	
+
 			if (username == null || username.length == 0)
 			{
 				callback(false);
 				return;
 			}
-	
+
 			var password = urlParams['pass'] || prompt('Password');
-	
+
 			if (password == null || password.length == 0)
 			{
 				callback(false);
 				return;
 			}
-	
+
 			var msg = prompt('Commit Message', 'Update ' + tokens[tokens.length - 1]);
-	
+
 			if (msg == null)
 			{
 				callback(false);
 				return;
 			}
-				
+
 			var url = 'https://api.github.com/repos/' + org + '/' + repo +
 				'/contents/' + path + '?ref=' + encodeURIComponent(ref);
 
@@ -206,14 +206,14 @@ var nanocms = function(elt)
 				writeFile(url, username, password, sha, msg, function(req)
 				{
 					var success = req.status == 200 || req.status == 201;
-			
+
 					if (!success)
 					{
 						var obj = JSON.parse(req.responseText);
-				
+
 						alert((obj != null) ? obj.message : 'Error');
 					}
-					
+
 					callback(success);
 				});
 			});
@@ -226,7 +226,7 @@ var nanocms = function(elt)
 				if (req.status == 200)
 				{
 					var obj = JSON.parse(req.responseText);
-			
+
 					callback((obj != null) ? obj.sha : null);
 				}
 				else
@@ -243,7 +243,7 @@ var nanocms = function(elt)
 				path: path,
 				message: msg,
 				content: btoa(unescape(encodeURIComponent(document.documentElement.outerHTML)))
-			};			
+			};
 
 			if (sha != null)
 			{
@@ -277,11 +277,11 @@ var nanocms = function(elt)
 
 			req.send(data);
 		};
-				
+
 		var cancel = document.createElement('button');
 		cancel.innerHTML = 'Cancel';
 		var initial = null;
-		
+
 		cancel.addEventListener('click', function()
 		{
 			if (initial == document.documentElement.outerHTML ||
@@ -290,7 +290,7 @@ var nanocms = function(elt)
 				window.location.search = '?t=' + new Date().getTime();
 			}
 		});
-		
+
 		var button = document.createElement('button');
 		button.innerHTML = 'Save';
 
@@ -299,25 +299,25 @@ var nanocms = function(elt)
 			elt.removeAttribute('contenteditable');
 			cancel.parentNode.removeChild(cancel);
 			button.parentNode.removeChild(button);
-			
+
 			save(function(success)
 			{
 				document.body.appendChild(cancel);
 				document.body.appendChild(button);
-			
+
 				elt.setAttribute('contenteditable', 'true');
 				elt.focus();
-				
+
 				initial = document.documentElement.outerHTML;
 			});
 		});
-		
+
 		document.body.appendChild(cancel);
 		document.body.appendChild(button);
-		
+
 		elt.setAttribute('contenteditable', 'true');
 		elt.focus();
-		
+
 		initial = document.documentElement.outerHTML;
 	}
 	else
@@ -325,9 +325,9 @@ var nanocms = function(elt)
 		// Edits an image with drawio class on double click
 		document.addEventListener('dblclick', function(evt)
 		{
-			var url = 'https://www.draw.io/?client=1&chrome=0&edit=_blank';
+			var url = 'https://app.diagrams.net/?client=1&chrome=0&edit=_blank';
 			var source = getEventSourceDiagram(evt);
-			
+
 			if ((source.nodeName == 'IMG' && source.className == 'nanocms-diagram') ||
 				(source.nodeName == 'svg' && source.className.baseVal == 'nanocms-diagram'))
 			{
@@ -341,12 +341,12 @@ var nanocms = function(elt)
 							var data = (source.nodeName == 'svg') ?
 								decodeURIComponent(source.getAttribute('content')) :
 								source.getAttribute('src');
-			
+
 							source.drawIoWindow.postMessage(data, '*');
 							window.removeEventListener('message', receive);
 						}
 					};
-							
+
 					window.addEventListener('message', receive);
 					source.drawIoWindow = window.open(url);
 				}
